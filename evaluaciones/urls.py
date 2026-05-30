@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import EvaluarIdeaView, EvaluacionDetalleView
+
+from .views import EvaluacionDetalleView, EvaluarIdeaView
 
 urlpatterns = [
-    path('evaluar/', EvaluarIdeaView.as_view()),
-    path('evaluacion/<int:pk>/', EvaluacionDetalleView.as_view()),
+    path("evaluar/", EvaluarIdeaView.as_view()),
+    path("evaluacion/<uuid:uuid_publico>/", EvaluacionDetalleView.as_view()),
 ]
