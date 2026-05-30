@@ -1,9 +1,7 @@
-"""URL routes for business idea evaluations."""
-
 from django.urls import path
-
-from . import views
+from .views import EvaluarIdeaView, EvaluacionDetalleView
 
 urlpatterns = [
-    path('', views.evaluaciones_root, name='evaluaciones_root'),
+    path('evaluar/', EvaluarIdeaView.as_view()),
+    path('evaluacion/<int:pk>/', EvaluacionDetalleView.as_view()),
 ]

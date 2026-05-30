@@ -6,7 +6,6 @@ SQLite in development and environment variables managed by python-decouple.
 """
 
 from pathlib import Path
-
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -55,7 +55,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'brote_backend.urls'
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://brote.cl",  # tu dominio
+]
+
+ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY")
+
+ROOT_URLCONF = 'brote_back.urls'
 
 TEMPLATES = [
     {
