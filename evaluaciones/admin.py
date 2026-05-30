@@ -1,3 +1,4 @@
+"""Admin registrations for evaluaciones."""
 from django.contrib import admin
 
 from .models import Evaluacion
