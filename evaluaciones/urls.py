@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import EvaluarIdeaView, EvaluacionDetalleView
+
+from .views import EvaluacionDetalleView, EvaluarIdeaView
 
 urlpatterns = [
     path('evaluar/', EvaluarIdeaView.as_view()),
