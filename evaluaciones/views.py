@@ -113,7 +113,7 @@ class EvaluarIdeaView(APIView):
         try:
             prompt = build_prompt(data)
             message = get_anthropic_client().messages.create(
-                model="claude-sonnet-4-20250514",
+                model=settings.ANTHROPIC_MODEL,
                 max_tokens=2000,
                 messages=[{"role": "user", "content": prompt}],
             )
