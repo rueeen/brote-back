@@ -6,7 +6,7 @@ SQLite in development and environment variables managed by python-decouple.
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +21,18 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-developm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1',
+    cast=Csv(),
+)
 
 # Anthropic
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+ANTHROPIC_MODEL = config(
+    'ANTHROPIC_MODEL',
+    default='claude-sonnet-4-20250514',
+)
 
 
 # Application definition
@@ -47,7 +55,6 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -55,12 +62,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://brote.cl",  # tu dominio
-]
-
-ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000',
+    cast=Csv(),
+)
 
 ROOT_URLCONF = 'brote_backend.urls'
 
@@ -152,7 +158,3 @@ REST_FRAMEWORK = {
     ),
 }
 
-# CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
