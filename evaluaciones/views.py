@@ -22,9 +22,13 @@ from rest_framework import status
 from decouple import config
 from .models import Evaluacion
 from .serializers import EvaluacionInputSerializer
-from .prompts import construir_prompt
+from .prompts import build_prompt, validate_ai_response
 
-client = Anthropic(api_key=config("ANTHROPIC_API_KEY"))
+
+def get_anthropic_client():
+    """Create an Anthropic client when an evaluation is requested."""
+    return Anthropic(api_key=config("ANTHROPIC_API_KEY"))
+
 
 class EvaluarIdeaView(APIView):
     def post(self, request):
@@ -40,14 +44,16 @@ class EvaluarIdeaView(APIView):
         )
 
         try:
-            prompt = construir_prompt(data)
-            message = client.messages.create(
+            prompt = build_prompt(data)
+            message = get_anthropic_client().messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=2000,
                 messages=[{"role": "user", "content": prompt}]
             )
             texto = message.content[0].text.strip()
             resultado = json.loads(texto)
+            if not validate_ai_response(resultado):
+                raise ValueError("La respuesta de Claude no cumple el esquema requerido.")
 
             evaluacion.resultado = resultado
             evaluacion.estado = 'listo'

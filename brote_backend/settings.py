@@ -60,9 +60,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://brote.cl",  # tu dominio
 ]
 
-ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY")
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 
-ROOT_URLCONF = 'brote_back.urls'
+ROOT_URLCONF = 'brote_backend.urls'
 
 TEMPLATES = [
     {
