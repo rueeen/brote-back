@@ -1,5 +1,8 @@
 from unittest import TestCase
 
+from django.test import Client, SimpleTestCase
+from django.urls import Resolver404, resolve
+
 from .prompts import build_prompt, construir_prompt, validate_ai_response
 
 
@@ -43,6 +46,28 @@ VALID_AI_RESPONSE = {
     ],
     "recomendaciones": ["Validar problema", "Probar MVP", "Medir retención"],
 }
+
+
+class HealthEndpointTests(SimpleTestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_health_endpoint_returns_public_service_status(self):
+        response = self.client.get("/api/health/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "ok",
+                "servicio": "brote-backend",
+                "version": "0.1.0",
+            },
+        )
+
+    def test_usuarios_root_is_not_registered(self):
+        with self.assertRaises(Resolver404):
+            resolve("/api/usuarios/")
 
 
 class PromptBuilderTests(TestCase):

@@ -64,5 +64,7 @@ python manage.py runserver
 
 - `POST /api/auth/token/`: obtiene tokens JWT.
 - `POST /api/auth/token/refresh/`: refresca el access token.
-- `GET /api/evaluaciones/`: health básico de la app evaluaciones.
-- `GET /api/usuarios/`: health básico de la app usuarios.
+- `GET /api/health/`: health check público del backend.
+- `POST /api/evaluar/`: evalúa una idea de negocio.
+- `GET /api/evaluacion/<uuid>/`: obtiene una evaluación por UUID.
+- `GET /api/evaluaciones/`: lista las últimas evaluaciones para usuarios admin.
