@@ -1,6 +1,7 @@
 """API views for business idea evaluations."""
 
 from __future__ import annotations
+import re
 
 import hashlib
 import json
@@ -25,6 +26,22 @@ from .serializers import (
 RATE_LIMIT_MAX_REQUESTS = 5
 RATE_LIMIT_WINDOW_SECONDS = 60 * 60
 RATE_LIMIT_CACHE_PREFIX = "evaluar_idea_rate_limit"
+
+
+def extract_json_from_text(text: str) -> str:
+    """Extrae el primer bloque JSON de un texto, aunque venga con markdown o preámbulo."""
+    text = text.strip()
+    # Caso 1: viene envuelto en ```json ... ```
+    fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if fence_match:
+        return fence_match.group(1)
+    # Caso 2: viene con preámbulo, buscar el primer { y el último }
+    first = text.find("{")
+    last = text.rfind("}")
+    if first != -1 and last > first:
+        return text[first:last + 1]
+    # Caso 3: ya es JSON puro
+    return text
 
 
 def error_response(message: str, code: str, http_status: int) -> Response:
@@ -87,8 +104,10 @@ class EvaluarIdeaView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        print(">>> POST /api/evaluar/ RECIBIDO")
         ip_address = get_client_ip(request)
         if is_rate_limited(ip_address):
+            print(">>> RATE LIMITED")
             return error_response(
                 "Has superado el máximo de 5 evaluaciones por IP por hora. Intenta nuevamente más tarde.",
                 "RATE_LIMIT_EXCEDIDO",
@@ -97,6 +116,7 @@ class EvaluarIdeaView(APIView):
 
         serializer = EvaluacionInputSerializer(data=request.data)
         if not serializer.is_valid():
+            print(">>> SERIALIZER INVALIDO:", serializer.errors)
             return error_response(
                 "Los datos enviados no son válidos.",
                 "DATOS_INVALIDOS",
@@ -104,33 +124,43 @@ class EvaluarIdeaView(APIView):
             )
 
         data = serializer.validated_data
+        print(">>> DATOS VALIDADOS:", data)
         evaluacion = Evaluacion.objects.create(
             **data,
             estado="procesando",
             ip_origen=ip_address,
         )
+        print(">>> EVALUACION CREADA, llamando a Anthropic con modelo:",
+              settings.ANTHROPIC_MODEL)
 
         try:
             prompt = build_prompt(data)
             message = get_anthropic_client().messages.create(
                 model=settings.ANTHROPIC_MODEL,
-                max_tokens=2000,
+                max_tokens=4000,
                 messages=[{"role": "user", "content": prompt}],
             )
-            resultado = json.loads(extract_claude_text(message))
+            print(">>> RESPUESTA DE ANTHROPIC RECIBIDA")
+            raw_text = extract_claude_text(message)
+            resultado = json.loads(extract_json_from_text(raw_text))
 
             if not validate_ai_response(resultado):
-                raise ValueError("La respuesta de Claude no cumple el esquema requerido.")
+                raise ValueError(
+                    "La respuesta de Claude no cumple el esquema requerido.")
 
             evaluacion.resultado = resultado
             evaluacion.estado = "listo"
             evaluacion.save(update_fields=["resultado", "estado"])
-
+            print(">>> EVALUACION COMPLETADA OK")
             return Response(
                 {"uuid": evaluacion.uuid, "resultado": resultado},
                 status=status.HTTP_201_CREATED,
             )
-        except JSONDecodeError:
+        except JSONDecodeError as exc:
+            print(">>> JSONDecodeError:", exc)
+            print(">>> RESPUESTA CRUDA DE CLAUDE:")
+            print(extract_claude_text(message))
+            print(">>> FIN RESPUESTA CRUDA")
             evaluacion.estado = "error"
             evaluacion.save(update_fields=["estado"])
             return error_response(
@@ -139,6 +169,7 @@ class EvaluarIdeaView(APIView):
                 status.HTTP_502_BAD_GATEWAY,
             )
         except ValueError as exc:
+            print(">>> ValueError:", exc)
             evaluacion.estado = "error"
             evaluacion.save(update_fields=["estado"])
             return error_response(
@@ -146,7 +177,12 @@ class EvaluarIdeaView(APIView):
                 "RESPUESTA_IA_INVALIDA",
                 status.HTTP_502_BAD_GATEWAY,
             )
-        except Exception:
+        except Exception as exc:
+            import traceback
+            print("=" * 60)
+            print(">>> EXCEPTION:", type(exc).__name__, str(exc))
+            traceback.print_exc()
+            print("=" * 60)
             evaluacion.estado = "error"
             evaluacion.save(update_fields=["estado"])
             return error_response(
