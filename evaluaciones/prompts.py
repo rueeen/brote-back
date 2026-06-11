@@ -173,13 +173,15 @@ INSTRUCCIONES DE EVALUACIÓN
 - Sé exigente, específico y útil para un emprendedor chileno en etapa temprana.
 - Usa puntajes enteros de 0 a 100; el puntaje_global debe ser consistente con los cinco puntajes parciales.
 - Entrega FODA con elementos concretos, no genéricos.
-- Estima presupuesto en rangos USD realistas para MVP, lanzamiento y escala inicial; aclara supuestos en notas.
-- En competencia, incluye competidores o sustitutos conocidos cuando puedas inferirlos; si no hay datos suficientes, usa tipo "ninguna" con explicación y url vacía.
+- Estima presupuesto pensando en un emprendedor PyME chileno en etapa muy temprana (idea o prototipo inicial), con recursos limitados típicos de ese perfil. Los rangos deben ser alcanzables: MVP entre $200.000 y $3.000.000 CLP como punto de referencia orientativo, lanzamiento entre $500.000 y $10.000.000 CLP, y escala inicial según el rubro. Ajusta hacia arriba o hacia abajo según la complejidad real de la idea, pero NUNCA asumas financiamiento externo ni inversión de capital de riesgo como punto de partida. Aclara supuestos en notas.
+- Si el usuario proporcionó un presupuesto disponible, interprétalo como CLP salvo que explícitamente indique otra moneda.
+- En competencia: incluye SOLO actores que REALMENTE existen en el mercado chileno y que puedas identificar con certeza (empresa real, URL verificable). Si no identificas competidores reales con certeza, devuelve UN SOLO elemento con tipo "ninguna", nombre vacío, url vacía y en descripcion explica brevemente por qué no hay competencia identificable o cuáles son los sustitutos genéricos. NUNCA inventes nombres de empresas ni URLs.
 - Las recomendaciones deben ser accionables, priorizadas y adecuadas a la ciudad, rubro y presupuesto.
 
 FORMATO DE RESPUESTA OBLIGATORIO
 Responde SOLO con JSON válido, sin backticks, sin markdown, sin comentarios y sin texto extra antes o después.
 Respeta exactamente estas claves de primer nivel y estructura:
+- Todos los montos del campo "presupuesto" deben expresarse en pesos chilenos (CLP), usando el símbolo "$" o la abreviación "CLP". Nunca uses USD, dólares ni otras monedas.
 {{
   "puntajes": {{
     "innovacion": 0,
@@ -199,9 +201,9 @@ Respeta exactamente estas claves de primer nivel y estructura:
     "amenazas": []
   }},
   "presupuesto": {{
-    "mvp": "rango USD",
-    "lanzamiento": "rango USD",
-    "escala": "rango USD",
+    "mvp": "rango CLP",
+    "lanzamiento": "rango CLP",
+    "escala": "rango CLP",
     "notas": "texto"
   }},
   "factibilidad": {{
